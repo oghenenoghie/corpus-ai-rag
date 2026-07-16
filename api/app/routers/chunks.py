@@ -1,3 +1,4 @@
+from typing import Any
 from uuid import UUID
 
 import asyncpg
@@ -14,7 +15,7 @@ class ChunkPreview(BaseModel):
     document_id: UUID
     content: str
     page_number: int | None
-    bbox: dict | None
+    bbox: dict[str, Any] | None
     heading_path: list[str]
 
 

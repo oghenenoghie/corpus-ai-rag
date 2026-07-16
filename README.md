@@ -43,6 +43,17 @@ cp .env.example .env.local   # NEXT_PUBLIC_API_URL, defaults to http://localhost
 npm run dev
 ```
 
+Visit `/collections`, create one, then open it to drag-and-drop a PDF and
+watch ingestion status update live (pending → parsing → embedding → ready).
+
+## Status
+
+- **Ingestion (Phase 1):** working end to end — upload → pymupdf parse →
+  structure-aware chunking with heading-path prefixing → OpenAI embeddings →
+  batch insert, with live status polling in the UI.
+- **Retrieval, answering, evals (Phases 2–4):** not yet implemented — see the
+  Build State checklist in the skill doc.
+
 ## Required API keys / services
 
 - Anthropic API key

@@ -1,3 +1,4 @@
+import json
 from collections.abc import AsyncGenerator
 
 import asyncpg
@@ -10,6 +11,16 @@ _pool: asyncpg.Pool | None = None
 
 async def _init_connection(conn: asyncpg.Connection) -> None:
     await register_vector(conn)
+    # Without this, asyncpg hands back jsonb columns (e.g. chunks.bbox) as
+    # raw text instead of decoded Python objects, and inserts need an
+    # explicit ::jsonb cast + manual json.dumps.
+    await conn.set_type_codec(
+        "jsonb",
+        encoder=json.dumps,
+        decoder=json.loads,
+        schema="pg_catalog",
+        format="text",
+    )
 
 
 async def get_pool() -> asyncpg.Pool:

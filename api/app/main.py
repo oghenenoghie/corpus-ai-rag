@@ -1,13 +1,14 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
 from app.db import close_pool, get_pool
-from app.routers import chunks, documents, ingest, query
+from app.routers import chunks, collections, documents, ingest, query
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await get_pool()
     yield
     await close_pool()
@@ -15,6 +16,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Corpus API", lifespan=lifespan)
 
+app.include_router(collections.router)
 app.include_router(ingest.router)
 app.include_router(documents.router)
 app.include_router(query.router)

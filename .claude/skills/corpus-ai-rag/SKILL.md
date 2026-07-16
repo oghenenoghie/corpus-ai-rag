@@ -143,11 +143,12 @@ Update this every session. Fresh sessions read this first to know where to resum
 
 **Phase 1 — Ingestion**
 - [x] Repo scaffold: Next.js 15 (`web/`) + FastAPI (`api/`) with all required tooling/dependencies pinned
-- [ ] Nile Postgres project connected; pgvector extension enabled; schema + HNSW/GIN indexes
-- [ ] PDF parse (pymupdf) preserving page numbers + bounding boxes
-- [ ] Structure-aware chunker with heading-path prefixing
-- [ ] Embedding + batch insert; document status state machine
-- [ ] Next.js upload UI with live ingestion progress
+- [ ] Nile Postgres project connected (needs real `DATABASE_URL`); pgvector extension enabled; run `api/schema.sql` for HNSW/GIN indexes
+- [x] PDF parse (`app/pdf_parser.py`, pymupdf) — text lines with page numbers, bboxes, font size/bold for heading detection
+- [x] Structure-aware chunker (`app/chunker.py`) — font-size-based heading path, ~500 token target with 15% overlap, `embedding_text` (heading-path prefixed) kept separate from raw `content`
+- [x] Embedding + batch insert (`app/embeddings.py`, `app/routers/ingest.py`); document status state machine (`pending` → `parsing` → `embedding` → `ready`/`failed`)
+- [x] Next.js upload UI with live ingestion progress (`web/app/collections`, polls every 2s while any document is in-flight)
+- [ ] Not yet done: original PDF blob storage (`documents.storage_path` is left null — files only live in memory during ingestion); real auth (collections currently scoped by a per-browser localStorage id, not a real `owner_id`)
 
 **Phase 2 — Retrieval**
 - [ ] Vector search (cosine, HNSW)

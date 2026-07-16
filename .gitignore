@@ -5,6 +5,7 @@ web/out/
 web/.env
 web/.env.local
 web/next-env.d.ts
+web/tsconfig.tsbuildinfo
 
 # Python
 api/.venv/

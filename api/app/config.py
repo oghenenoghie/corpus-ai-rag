@@ -24,5 +24,5 @@ class RetrievalConfig(BaseModel):
     chunk_overlap_ratio: float = 0.15
 
 
-settings = Settings()  # type: ignore[call-arg]
+settings = Settings()
 default_retrieval_config = RetrievalConfig()

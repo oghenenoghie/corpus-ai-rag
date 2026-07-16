@@ -35,10 +35,17 @@ target-version = "py311"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
+
 [tool.mypy]
 python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["fitz", "asyncpg", "asyncpg.*", "pgvector.*"]
+ignore_missing_imports = true
 
 [build-system]
 requires = ["setuptools>=69"]
