@@ -51,8 +51,23 @@ watch ingestion status update live (pending → parsing → embedding → ready)
 - **Ingestion (Phase 1):** working end to end — upload → pymupdf parse →
   structure-aware chunking with heading-path prefixing → OpenAI embeddings →
   batch insert, with live status polling in the UI.
-- **Retrieval, answering, evals (Phases 2–4):** not yet implemented — see the
-  Build State checklist in the skill doc.
+- **Retrieval (Phase 2):** vector search (HNSW cosine) + keyword search
+  (`tsvector`/`ts_rank_cd`) fused with Reciprocal Rank Fusion, then
+  cross-encoder reranked (local `bge-reranker-base` by default, or Cohere
+  Rerank via `RetrievalConfig.reranker="cohere"`). Wired into `POST /query`,
+  which currently streams a `retrieval` SSE event and stops there —
+  generation is Phase 3. Correct by unit test and inspection, but not yet
+  run against a live database (see caveat below).
+- **Answering, evals (Phases 3–4):** not yet implemented — see the Build
+  State checklist in the skill doc.
+
+> This project has been developed inside a sandbox with no network path to
+> Nile (raw Postgres connections aren't supported through its egress proxy,
+> and Nile's HTTPS API isn't allowlisted either). Everything above is
+> verified with `mypy --strict`/`ruff`/`tsc`/`eslint`/`next build`, and the
+> pure-Python pieces (chunker, RRF) are unit-tested directly, but nothing
+> has touched the real database yet. Run `api/schema.sql` and do a live
+> smoke test (upload a PDF, then `POST /query`) before trusting this fully.
 
 ## Required API keys / services
 

@@ -44,7 +44,7 @@ strict = true
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["fitz", "asyncpg", "asyncpg.*", "pgvector.*"]
+module = ["fitz", "asyncpg", "asyncpg.*", "pgvector.*", "sentence_transformers", "cohere"]
 ignore_missing_imports = true
 
 [build-system]

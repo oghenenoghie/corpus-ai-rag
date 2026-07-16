@@ -151,11 +151,12 @@ Update this every session. Fresh sessions read this first to know where to resum
 - [ ] Not yet done: original PDF blob storage (`documents.storage_path` is left null — files only live in memory during ingestion); real auth (collections currently scoped by a per-browser localStorage id, not a real `owner_id`)
 
 **Phase 2 — Retrieval**
-- [ ] Vector search (cosine, HNSW)
-- [ ] Keyword search (`tsvector` + BM25 ranking)
-- [ ] Reciprocal Rank Fusion
-- [ ] Cross-encoder rerank
-- [ ] `RetrievalConfig` object — every knob configurable
+- [x] Vector search (cosine, HNSW) — `app/retrieval.py::vector_search`
+- [x] Keyword search (`tsvector` + `ts_rank_cd`, standing in for BM25) — `app/retrieval.py::keyword_search`
+- [x] Reciprocal Rank Fusion — `app/retrieval.py::reciprocal_rank_fusion` (pure function, unit-verified: ties and partial-list membership behave correctly)
+- [x] Cross-encoder rerank — `app/reranker.py`, local `bge-reranker-base` by default, Cohere Rerank via `RetrievalConfig.reranker="cohere"`
+- [x] `RetrievalConfig` object — every knob configurable (added `reranker` toggle this phase)
+- [ ] Not yet verified against a live database: the sandbox this was built in cannot reach Nile at all (raw TCP unsupported, and Nile's HTTPS API isn't on the egress allowlist either) — vector_search/keyword_search SQL is correct by inspection but untested end-to-end. Retrieval is wired into `POST /query`, which now streams a `retrieval` SSE event and stops (generation is Phase 3).
 
 **Phase 3 — Answering**
 - [ ] Prompt template with cite-or-abstain instruction

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -22,6 +24,9 @@ class RetrievalConfig(BaseModel):
     rerank_top_k: int = 5
     chunk_target_tokens: int = 500
     chunk_overlap_ratio: float = 0.15
+    # "local" runs bge-reranker-base on this process (no extra cost, needs
+    # the model weights on disk); "cohere" calls the hosted Rerank API.
+    reranker: Literal["local", "cohere"] = "local"
 
 
 settings = Settings()
