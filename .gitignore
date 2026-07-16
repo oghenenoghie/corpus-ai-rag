@@ -1,0 +1,21 @@
+# Node / Next.js
+web/node_modules/
+web/.next/
+web/out/
+web/.env
+web/.env.local
+web/next-env.d.ts
+
+# Python
+api/.venv/
+api/__pycache__/
+api/**/__pycache__/
+api/*.egg-info/
+api/.pytest_cache/
+api/.mypy_cache/
+api/.ruff_cache/
+api/.env
+
+# General
+.DS_Store
+*.log

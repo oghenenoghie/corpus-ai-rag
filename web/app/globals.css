@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  /* Corpus design tokens */
+  --color-parchment: #f6f3ec;
+  --color-sheet: #fffdf9;
+  --color-ink: #14110e;
+  --color-sepia: #6b5a45;
+  --color-rule: #e0d9cb;
+  --color-oxide: #b5462f;
+  --color-indigo: #2c3e7a;
+  --color-moss: #4a7a52;
+
+  --font-display: "Newsreader", ui-serif, serif;
+  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+body {
+  background: var(--color-parchment);
+  color: var(--color-ink);
+}

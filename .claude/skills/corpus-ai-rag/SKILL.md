@@ -15,13 +15,13 @@ description: Full project context for Corpus — an AI document intelligence pla
 
 - **Frontend:** Next.js 15 (App Router), TypeScript strict, Tailwind, shadcn/ui
 - **Backend:** FastAPI (Python) — this is where the ML work lives, and it shows Python range alongside the TS work
-- **DB:** Postgres + `pgvector` (Supabase). `tsvector` column for keyword search
+- **DB:** Postgres + `pgvector` on [Nile](https://www.thenile.dev) (provisioned via the Vercel Marketplace integration). `tsvector` column for keyword search. Nile's native tenant virtualization is a natural fit for the `Collection`/`owner_id` isolation boundary — consider mapping collections to Nile tenants instead of hand-rolled RLS
 - **Embeddings:** `text-embedding-3-small` (1536d) — cheap, strong, fine
 - **Generation:** Claude API, streaming
 - **Reranking:** `bge-reranker-base` via a cross-encoder, or Cohere Rerank if a hosted call is preferred
 - **Parsing:** `unstructured` or `pymupdf` for PDF; keep page numbers and bounding boxes
 - **Queue:** background ingestion via FastAPI BackgroundTasks (upgrade to Celery/Redis only if it becomes the bottleneck)
-- **Deploy:** Vercel (web) + Railway/Fly (API) + Supabase (DB)
+- **Deploy:** Vercel (web) + Railway/Fly (API) + Nile (DB)
 
 ## Design system — "Corpus"
 
@@ -142,7 +142,8 @@ GET  /chunks/{id}              citation hover preview
 Update this every session. Fresh sessions read this first to know where to resume.
 
 **Phase 1 — Ingestion**
-- [ ] FastAPI scaffold; Supabase + pgvector extension; schema + HNSW/GIN indexes
+- [x] Repo scaffold: Next.js 15 (`web/`) + FastAPI (`api/`) with all required tooling/dependencies pinned
+- [ ] Nile Postgres project connected; pgvector extension enabled; schema + HNSW/GIN indexes
 - [ ] PDF parse (pymupdf) preserving page numbers + bounding boxes
 - [ ] Structure-aware chunker with heading-path prefixing
 - [ ] Embedding + batch insert; document status state machine
@@ -176,5 +177,5 @@ Update this every session. Fresh sessions read this first to know where to resum
 
 - Anthropic API key; OpenAI key (embeddings) or a local embedding choice
 - Cohere key **only** if using hosted rerank instead of a local cross-encoder
-- Supabase project with `pgvector` enabled
+- Nile Postgres project (`nile_bronze_brush`, provisioned via Vercel Marketplace) with `pgvector` enabled
 - **A demo corpus** — pick something with genuine domain weight, not lorem PDFs. Strong options: Nigerian tax/regulatory filings, marine engine service manuals (dovetails with Drydock), or a set of IFS course materials. Domain-specific corpora make the citations visibly impressive.
