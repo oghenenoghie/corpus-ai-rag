@@ -156,14 +156,16 @@ Update this every session. Fresh sessions read this first to know where to resum
 - [x] Reciprocal Rank Fusion — `app/retrieval.py::reciprocal_rank_fusion` (pure function, unit-verified: ties and partial-list membership behave correctly)
 - [x] Cross-encoder rerank — `app/reranker.py`, local `bge-reranker-base` by default, Cohere Rerank via `RetrievalConfig.reranker="cohere"`
 - [x] `RetrievalConfig` object — every knob configurable (added `reranker` toggle this phase)
-- [ ] Not yet verified against a live database: the sandbox this was built in cannot reach Nile at all (raw TCP unsupported, and Nile's HTTPS API isn't on the egress allowlist either) — vector_search/keyword_search SQL is correct by inspection but untested end-to-end. Retrieval is wired into `POST /query`, which now streams a `retrieval` SSE event and stops (generation is Phase 3).
+- [ ] Not yet verified against a live database: the sandbox this was built in cannot reach Nile at all (raw TCP unsupported, and Nile's HTTPS API isn't on the egress allowlist either) — vector_search/keyword_search SQL is correct by inspection but untested end-to-end.
 
 **Phase 3 — Answering**
-- [ ] Prompt template with cite-or-abstain instruction
-- [ ] SSE streaming endpoint
-- [ ] Chat UI: streaming render, message history
-- [ ] Citation parsing → `citations` rows
-- [ ] PDF viewer pane; click citation → scroll to page + paint bbox
+- [x] Prompt template with cite-or-abstain instruction — `app/generation.py::SYSTEM_PROMPT`; numbered `[n]` markers (not literal chunk UUIDs — asking a model to reproduce a random UUID verbatim is unreliable, and the UI wants `[1]`-style superscripts anyway)
+- [x] SSE streaming endpoint — `POST /query` now streams `retrieval` → `token`* → `citations` → `done` events end to end
+- [x] Chat UI: streaming render, message history — `web/app/collections/[id]/chat`; conversation history is also fed back to Claude as prior turns for follow-up questions, not just displayed
+- [x] Citation parsing → `citations` rows — `app/generation.py`, matches `[n]` markers back to the actual retrieved chunk and records `span_start`/`span_end` for exact-position rendering (`components/citation-text.tsx`)
+- [x] PDF viewer pane; click citation → scroll to page — iframe using the browser's native PDF viewer + `#page=N` fragment (`GET /documents/{id}/file`, backed by new local disk storage — `app/storage.py`, not yet real object storage)
+- [ ] Not done: bbox highlight painting on the citation's exact location. A native `<iframe>` PDF view can't overlay DOM elements at PDF coordinates; that needs a pdf.js canvas-based renderer, which hasn't been built. Page-jump works, highlight-painting doesn't.
+- [ ] Not yet verified against a live database or a real Anthropic API key — same sandbox limitation as Phase 2, plus this phase specifically needs `ANTHROPIC_API_KEY` (still a placeholder in `api/.env`)
 
 **Phase 4 — Evals & proof**
 - [ ] Golden set: ~50 Q/A pairs with known source chunks

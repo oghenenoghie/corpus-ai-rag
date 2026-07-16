@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { use, useCallback, useEffect, useRef, useState } from "react";
 import { listDocuments, uploadDocument, type DocumentStatus } from "@/lib/api";
 import { UploadDropzone } from "@/components/upload-dropzone";
@@ -64,9 +65,14 @@ export default function CollectionDetailPage({
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="font-[family-name:var(--font-display)] text-3xl text-ink">
-        Collection documents
-      </h1>
+      <div className="flex items-baseline justify-between">
+        <h1 className="font-[family-name:var(--font-display)] text-3xl text-ink">
+          Collection documents
+        </h1>
+        <Link href={`/collections/${collectionId}/chat`} className="text-indigo hover:underline">
+          Chat →
+        </Link>
+      </div>
 
       <div className="mt-8">
         <UploadDropzone onFileSelected={handleUpload} disabled={uploading} />
@@ -79,7 +85,11 @@ export default function CollectionDetailPage({
           <p className="text-sepia">No documents yet — upload one above.</p>
         )}
         {documents.map((doc) => (
-          <div key={doc.id} className="rounded-lg border border-rule bg-sheet p-4">
+          <Link
+            key={doc.id}
+            href={`/collections/${collectionId}/doc/${doc.id}`}
+            className="block rounded-lg border border-rule bg-sheet p-4 hover:border-indigo"
+          >
             <div className="flex items-start justify-between gap-2">
               <p className="truncate text-ink">{doc.filename}</p>
               <DocumentStatusBadge status={doc.status} />
@@ -90,7 +100,7 @@ export default function CollectionDetailPage({
             {doc.status === "failed" && doc.error && (
               <p className="mt-2 text-sm text-oxide">{doc.error}</p>
             )}
-          </div>
+          </Link>
         ))}
       </div>
     </main>

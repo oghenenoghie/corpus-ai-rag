@@ -9,6 +9,7 @@ from app.config import default_retrieval_config
 from app.db import get_connection, get_pool
 from app.embeddings import embed_texts
 from app.pdf_parser import parse_pdf
+from app.storage import save_document_file
 
 router = APIRouter(tags=["ingest"])
 
@@ -77,15 +78,17 @@ async def ingest_document(
 ) -> IngestResponse:
     document_id = uuid4()
     content = await file.read()
+    storage_path = save_document_file(document_id, content)
 
     await conn.execute(
         """
-        insert into documents (id, collection_id, filename, status)
-        values ($1, $2, $3, 'pending')
+        insert into documents (id, collection_id, filename, storage_path, status)
+        values ($1, $2, $3, $4, 'pending')
         """,
         document_id,
         collection_id,
         file.filename,
+        storage_path,
     )
 
     background_tasks.add_task(_run_ingestion_pipeline, document_id, content)

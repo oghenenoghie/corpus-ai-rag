@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from app.config import RetrievalConfig, default_retrieval_config
 from app.db import get_pool
 from app.embeddings import embed_texts
+from app.generation import generate_answer
 from app.reranker import rerank
 from app.retrieval import retrieve
 
@@ -29,11 +30,9 @@ def _sse(event: str, data: dict[str, Any]) -> str:
 async def _stream_answer(request: QueryRequest) -> AsyncIterator[str]:
     """Retrieve (vector + keyword, fused with RRF) -> rerank -> generate.
 
-    Phase 2 (see SKILL.md Build State) is wired up below: embed the
-    question, run vector + keyword search fused with RRF, then
-    cross-encoder rerank. Phase 3 — streaming the Claude completion and
-    parsing `[chunk_id]` citation markers into `citations` rows — is still
-    TODO, so the stream currently ends right after the `retrieval` event.
+    Full pipeline per SKILL.md: embed the question, run vector + keyword
+    search fused with RRF, cross-encoder rerank, then stream the Claude
+    completion and parse `[n]` citation markers into `citations` rows.
     Acquires its own connection rather than a request-scoped dependency,
     since it needs to outlive the route handler for the life of the stream.
     """
@@ -73,10 +72,11 @@ async def _stream_answer(request: QueryRequest) -> AsyncIterator[str]:
                 ]
             },
         )
-        yield _sse(
-            "error",
-            {"detail": "generation not implemented yet (Phase 3) — retrieval above is final"},
-        )
+
+        async for event, data in generate_answer(
+            conn, request.conversation_id, request.question, reranked
+        ):
+            yield _sse(event, data)
 
 
 @router.post("/query")

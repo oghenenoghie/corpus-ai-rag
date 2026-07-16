@@ -45,29 +45,39 @@ npm run dev
 
 Visit `/collections`, create one, then open it to drag-and-drop a PDF and
 watch ingestion status update live (pending → parsing → embedding → ready).
+Open `/collections/[id]/chat` to ask questions; click a citation marker to
+open its source PDF at the right page in the pane on the right.
 
 ## Status
 
 - **Ingestion (Phase 1):** working end to end — upload → pymupdf parse →
   structure-aware chunking with heading-path prefixing → OpenAI embeddings →
-  batch insert, with live status polling in the UI.
+  batch insert, with live status polling in the UI. The original PDF is also
+  saved to local disk (`api/storage/`) so it can be served back for viewing.
 - **Retrieval (Phase 2):** vector search (HNSW cosine) + keyword search
   (`tsvector`/`ts_rank_cd`) fused with Reciprocal Rank Fusion, then
   cross-encoder reranked (local `bge-reranker-base` by default, or Cohere
-  Rerank via `RetrievalConfig.reranker="cohere"`). Wired into `POST /query`,
-  which currently streams a `retrieval` SSE event and stops there —
-  generation is Phase 3. Correct by unit test and inspection, but not yet
-  run against a live database (see caveat below).
-- **Answering, evals (Phases 3–4):** not yet implemented — see the Build
-  State checklist in the skill doc.
+  Rerank via `RetrievalConfig.reranker="cohere"`).
+- **Answering (Phase 3):** cite-or-abstain prompt template, Claude streaming
+  via SSE, `[n]` citation markers parsed out of the stream and persisted to
+  `citations` with exact character spans, multi-turn history fed back to
+  Claude for follow-ups, and a chat UI with a PDF viewer pane that jumps to
+  the cited page on click. **Not implemented:** painting the citation's
+  bounding box on the page — the viewer is a native `<iframe>` (page-jump
+  only); a highlighted box needs a pdf.js canvas renderer instead.
+- **Evals (Phase 4):** not yet implemented — see the Build State checklist
+  in the skill doc.
 
 > This project has been developed inside a sandbox with no network path to
 > Nile (raw Postgres connections aren't supported through its egress proxy,
-> and Nile's HTTPS API isn't allowlisted either). Everything above is
-> verified with `mypy --strict`/`ruff`/`tsc`/`eslint`/`next build`, and the
-> pure-Python pieces (chunker, RRF) are unit-tested directly, but nothing
-> has touched the real database yet. Run `api/schema.sql` and do a live
-> smoke test (upload a PDF, then `POST /query`) before trusting this fully.
+> and Nile's HTTPS API isn't allowlisted either) and without a real
+> `ANTHROPIC_API_KEY`/`OPENAI_API_KEY`. Everything above is verified with
+> `mypy --strict`/`ruff`/`tsc`/`eslint`/`next build`, the Anthropic SDK's
+> streaming API was checked against its actual source rather than assumed,
+> and the pure-Python pieces (chunker, RRF) are unit-tested directly — but
+> nothing has touched the real database or a real model call yet. Run
+> `api/schema.sql`, add real API keys, and do a live smoke test (upload a
+> PDF, then ask it a question in the chat UI) before trusting this fully.
 
 ## Required API keys / services
 

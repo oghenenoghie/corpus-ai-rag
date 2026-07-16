@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     anthropic_api_key: str
     openai_api_key: str
     cohere_api_key: str | None = None
+    generation_model: str = "claude-sonnet-5"
 
 
 class RetrievalConfig(BaseModel):

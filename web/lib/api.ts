@@ -63,6 +63,106 @@ export async function uploadDocument(
   return res.json();
 }
 
+export type Citation = {
+  id: string;
+  chunk_id: string;
+  span_start: number;
+  span_end: number;
+  document_id: string;
+  page_number: number | null;
+};
+
+export type Message = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  created_at: string;
+  citations: Citation[];
+};
+
+export type Conversation = {
+  id: string;
+  collection_id: string;
+  title: string | null;
+};
+
+export type RetrievedChunkInfo = {
+  id: string;
+  document_id: string;
+  page_number: number | null;
+  heading_path: string[];
+  score: number;
+};
+
+export type QueryEvent =
+  | { event: "retrieval"; data: { chunks: RetrievedChunkInfo[] } }
+  | { event: "token"; data: { text: string } }
+  | { event: "citations"; data: { citations: Citation[] } }
+  | { event: "done"; data: { message_id: string } }
+  | { event: "error"; data: { detail: string } };
+
+export function createConversation(collectionId: string, title?: string): Promise<Conversation> {
+  return apiFetch<Conversation>(`/collections/${collectionId}/conversations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title: title ?? null }),
+  });
+}
+
+export function listConversations(collectionId: string): Promise<Conversation[]> {
+  return apiFetch<Conversation[]>(`/collections/${collectionId}/conversations`);
+}
+
+export function listMessages(conversationId: string): Promise<Message[]> {
+  return apiFetch<Message[]>(`/conversations/${conversationId}/messages`);
+}
+
+/** POST /query streams SSE ("event: x\ndata: y\n\n" frames), which the
+ * browser's EventSource can't do (it's GET-only) — so this parses the
+ * stream by hand off a plain fetch response body reader. */
+export async function streamQuery(
+  conversationId: string,
+  question: string,
+  onEvent: (event: QueryEvent) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(`${BASE}/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ conversation_id: conversationId, question }),
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    throw new Error(`query failed: ${res.status} ${await res.text()}`);
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    let frameEnd: number;
+    while ((frameEnd = buffer.indexOf("\n\n")) !== -1) {
+      const frame = buffer.slice(0, frameEnd);
+      buffer = buffer.slice(frameEnd + 2);
+
+      let eventName = "message";
+      let dataLine = "";
+      for (const line of frame.split("\n")) {
+        if (line.startsWith("event: ")) eventName = line.slice(7);
+        else if (line.startsWith("data: ")) dataLine = line.slice(6);
+      }
+      if (dataLine) {
+        onEvent({ event: eventName, data: JSON.parse(dataLine) } as QueryEvent);
+      }
+    }
+  }
+}
+
 const OWNER_ID_KEY = "corpus:owner-id";
 
 /** No auth yet (out of scope for Phase 1) — persist a per-browser owner id
