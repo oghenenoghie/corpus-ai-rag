@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createCollection, getLocalOwnerId, listCollections, type Collection } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function CollectionsPage() {
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -39,36 +42,33 @@ export default function CollectionsPage() {
       <h1 className="font-[family-name:var(--font-display)] text-3xl text-ink">Collections</h1>
 
       <form onSubmit={handleCreate} className="mt-8 flex gap-2">
-        <input
+        <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="New collection name"
-          className="flex-1 rounded-md border border-rule bg-sheet px-3 py-2 text-ink outline-none focus:border-indigo"
         />
-        <button
-          type="submit"
-          disabled={creating}
-          className="rounded-md bg-indigo px-4 py-2 text-sheet disabled:opacity-50"
-        >
+        <Button type="submit" disabled={creating}>
           Create
-        </button>
+        </Button>
       </form>
 
       {error && <p className="mt-4 text-oxide">{error}</p>}
 
-      <ul className="mt-8 divide-y divide-rule">
-        {loading && <li className="py-3 text-sepia">Loading…</li>}
+      <div className="mt-8 flex flex-col gap-3">
+        {loading && <p className="text-sepia">Loading…</p>}
         {!loading && collections.length === 0 && (
-          <li className="py-3 text-sepia">No collections yet — create one above.</li>
+          <p className="text-sepia">No collections yet — create one above.</p>
         )}
         {collections.map((c) => (
-          <li key={c.id} className="py-3">
-            <Link href={`/collections/${c.id}`} className="text-indigo hover:underline">
-              {c.name}
-            </Link>
-          </li>
+          <Link key={c.id} href={`/collections/${c.id}`}>
+            <Card className="transition-colors hover:border-indigo">
+              <CardHeader>
+                <CardTitle>{c.name}</CardTitle>
+              </CardHeader>
+            </Card>
+          </Link>
         ))}
-      </ul>
+      </div>
     </main>
   );
 }

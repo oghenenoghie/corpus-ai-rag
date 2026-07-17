@@ -41,6 +41,8 @@ Scholarly. Warm paper, serif display, restrained. Should feel like a research to
 **Type:** `Newsreader` (headings, answer text — serif, it reads as authoritative) · `Public Sans` (UI chrome) · `IBM Plex Mono` (chunk IDs, scores, metadata)
 **Rules:** generous line-height (`1.7`) on answer text — people actually read it. Citation markers render as superscript `[1]` in `oxide`; hovering previews the source chunk; clicking scrolls the PDF pane to the exact page and paints the bounding box in `oxide` at 20% opacity. No gradients.
 
+**UI primitives:** `web/components/ui/{button,card,input,badge}.tsx` — shadcn-style, built on the `cva`/`@radix-ui/react-slot` deps that were installed in the Phase 1 scaffold but unused until now. Use these instead of hand-rolled `<button>`/`<input>`/`<div>` markup in any new page. `DocumentStatusBadge` wraps `Badge` with a status→variant mapping; follow that pattern for other status-like displays rather than styling spans inline.
+
 ---
 
 ## Data model

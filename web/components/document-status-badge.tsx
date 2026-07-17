@@ -1,12 +1,12 @@
-import { cn } from "@/lib/utils";
+import { Badge, type BadgeProps } from "@/components/ui/badge";
 import type { DocumentStatusValue } from "@/lib/api";
 
-const STYLES: Record<DocumentStatusValue, string> = {
-  pending: "bg-rule text-sepia",
-  parsing: "bg-indigo/10 text-indigo",
-  embedding: "bg-indigo/10 text-indigo",
-  ready: "bg-moss/10 text-moss",
-  failed: "bg-oxide/10 text-oxide",
+const VARIANT: Record<DocumentStatusValue, NonNullable<BadgeProps["variant"]>> = {
+  pending: "default",
+  parsing: "info",
+  embedding: "info",
+  ready: "success",
+  failed: "destructive",
 };
 
 const LABELS: Record<DocumentStatusValue, string> = {
@@ -18,14 +18,5 @@ const LABELS: Record<DocumentStatusValue, string> = {
 };
 
 export function DocumentStatusBadge({ status }: { status: DocumentStatusValue }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 font-[family-name:var(--font-mono)] text-xs",
-        STYLES[status],
-      )}
-    >
-      {LABELS[status]}
-    </span>
-  );
+  return <Badge variant={VARIANT[status]}>{LABELS[status]}</Badge>;
 }

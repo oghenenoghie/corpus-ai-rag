@@ -8,6 +8,8 @@ import {
   type Message,
 } from "@/lib/api";
 import { CitationText } from "@/components/citation-text";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: collectionId } = use(params);
@@ -122,20 +124,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <div ref={bottomRef} />
         </div>
         <form onSubmit={handleAsk} className="flex gap-2 border-t border-rule p-4">
-          <input
+          <Input
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
             placeholder="Ask a question about this collection…"
             disabled={busy || !conversationId}
-            className="flex-1 rounded-md border border-rule bg-sheet px-3 py-2 text-ink outline-none focus:border-indigo"
           />
-          <button
-            type="submit"
-            disabled={busy || !conversationId}
-            className="rounded-md bg-indigo px-4 py-2 text-sheet disabled:opacity-50"
-          >
+          <Button type="submit" disabled={busy || !conversationId}>
             Ask
-          </button>
+          </Button>
         </form>
       </section>
 

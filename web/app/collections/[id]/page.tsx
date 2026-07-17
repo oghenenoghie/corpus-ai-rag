@@ -5,6 +5,8 @@ import { use, useCallback, useEffect, useRef, useState } from "react";
 import { listDocuments, uploadDocument, type DocumentStatus } from "@/lib/api";
 import { UploadDropzone } from "@/components/upload-dropzone";
 import { DocumentStatusBadge } from "@/components/document-status-badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 const IN_PROGRESS: DocumentStatus["status"][] = ["pending", "parsing", "embedding"];
 const POLL_INTERVAL_MS = 2000;
@@ -69,9 +71,9 @@ export default function CollectionDetailPage({
         <h1 className="font-[family-name:var(--font-display)] text-3xl text-ink">
           Collection documents
         </h1>
-        <Link href={`/collections/${collectionId}/chat`} className="text-indigo hover:underline">
-          Chat →
-        </Link>
+        <Button asChild variant="link">
+          <Link href={`/collections/${collectionId}/chat`}>Chat →</Link>
+        </Button>
       </div>
 
       <div className="mt-8">
@@ -85,21 +87,23 @@ export default function CollectionDetailPage({
           <p className="text-sepia">No documents yet — upload one above.</p>
         )}
         {documents.map((doc) => (
-          <Link
-            key={doc.id}
-            href={`/collections/${collectionId}/doc/${doc.id}`}
-            className="block rounded-lg border border-rule bg-sheet p-4 hover:border-indigo"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <p className="truncate text-ink">{doc.filename}</p>
-              <DocumentStatusBadge status={doc.status} />
-            </div>
-            <p className="mt-1 font-[family-name:var(--font-mono)] text-xs text-sepia">
-              {doc.page_count ? `${doc.page_count} pages` : "—"}
-            </p>
-            {doc.status === "failed" && doc.error && (
-              <p className="mt-2 text-sm text-oxide">{doc.error}</p>
-            )}
+          <Link key={doc.id} href={`/collections/${collectionId}/doc/${doc.id}`}>
+            <Card className="transition-colors hover:border-indigo">
+              <CardHeader>
+                <div className="flex items-start justify-between gap-2">
+                  <CardTitle className="text-base">{doc.filename}</CardTitle>
+                  <DocumentStatusBadge status={doc.status} />
+                </div>
+                <CardDescription>
+                  {doc.page_count ? `${doc.page_count} pages` : "—"}
+                </CardDescription>
+              </CardHeader>
+              {doc.status === "failed" && doc.error && (
+                <CardContent>
+                  <p className="text-sm text-oxide">{doc.error}</p>
+                </CardContent>
+              )}
+            </Card>
           </Link>
         ))}
       </div>
